@@ -1,0 +1,195 @@
+.author {
+    letter-spacing: 2px;
+    color: #c0392b;
+    font-size: 1.5rem;
+}
+.title, .subtitle, {
+	color: white;
+}
+.tabs li a {
+	color:white;
+}
+@import url('https://fonts.googleapis.com/css?family=Lato:100');
+body {
+	background: #000428; /* fallback for old browsers */
+  background: -webkit-linear-gradient(to right, #000428, #004e92); /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to right, #000428, #004e92); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  height: 100%;
+  .skill {
+    // width: 25%;
+  }
+}
+
+.nav-item a:not(.button).is-active, a.nav-item:not(.button).is-active {
+	color: white;
+}
+
+.tabs li.is-active a  {
+  color: #3153EB;
+  font-weight: 500;
+}
+.box {
+	height: 100%;
+}
+.intro {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap:wrap;
+    p {
+      width: 50%;
+      min-width: 400px;
+      padding-top: 25px;
+      margin-bottom: 50px;
+    }
+}
+.row {
+  height: 1000px;
+}
+@import url(https://fonts.googleapis.com/css?family=Merriweather);
+*,
+*:before,
+*:after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+form {
+  max-width: 600px;
+  text-align: center;
+  margin: 20px auto;
+}
+
+form input,
+form textarea {
+  border: 0;
+  outline: 0;
+  padding: 1em;
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+  display: block;
+  width: 100%;
+  margin-top: 1em;
+  font-family: "Merriweather", sans-serif;
+  -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  resize: none;
+}
+form input:focus,
+form textarea:focus {
+  -moz-box-shadow: 0 0px 2px #e74c3c !important;
+  -webkit-box-shadow: 0 0px 2px #e74c3c !important;
+  box-shadow: 0 0px 2px #e74c3c !important;
+}
+form #input-submit {
+  color: white;
+  background: #e74c3c;
+  cursor: pointer;
+}
+form #input-submit:hover {
+  -moz-box-shadow: 0 1px 1px 1px rgba(170, 170, 170, 0.6);
+  -webkit-box-shadow: 0 1px 1px 1px rgba(170, 170, 170, 0.6);
+  box-shadow: 0 1px 1px 1px rgba(170, 170, 170, 0.6);
+}
+form textarea {
+  height: 126px;
+}
+
+.half {
+  float: left;
+  width: 48%;
+  margin-bottom: 1em;
+}
+
+.right {
+  width: 50%;
+}
+
+.left {
+  margin-right: 2%;
+}
+
+@media (max-width: 480px) {
+  .half {
+    width: 100%;
+    float: none;
+    margin-bottom: 0;
+  }
+}
+/* Clearfix */
+.cf:before,
+.cf:after {
+  content: " ";
+  /* 1 */
+  display: table;
+  /* 2 */
+}
+
+.cf:after {
+  clear: both;
+}
+
+.avatar {
+  display: block;
+  width: 200px;
+  min-width: 170px;
+  height: 200px;
+  border-radius: 100%;
+  margin-left: 50px;
+  filter: grayscale(1);
+  transition: all .25s ease-in-out;
+  &:hover {
+    filter: grayscale(0.5);
+  }
+}
+.panel-heading {
+  background-color: #f39c12;
+  margin-bottom: 25px;
+  color: white;
+}
+.panel-body {
+  margin-top: 25px;
+}
+.skills {
+  display: flex;
+}
+.skill {
+  width: 25%;
+  min-width: 220px;
+}
+.progress {
+  margin: 20px;
+  width: 150px;
+  height: 150px;
+  position: relative;
+}
+
+//projects 
+.project {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+    .project-image {
+
+    }
+    .project-content {
+        width: 50%;
+        min-width: 450px;
+    }
+}
+.quiz {
+    // display: block;
+    width: 400px;
+}
+                            // <div class="project">
+                            //     <div class="project-image">
+                            //         img
+                            //     </div>
+                            //     <div class="project-content">
