@@ -20,6 +20,7 @@
 <form class="cf" method="post" action="/contact">
      {{ csrf_field() }}
   <div class="half left cf">
+    a
     <input name="name" type="text" id="input-name" placeholder="Name">
     <input name="email" type="email" id="input-email" placeholder="Email address">
     <input name="message" type="text" id="input-subject" placeholder="Subject">
