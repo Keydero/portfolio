@@ -518,6 +518,103 @@ module.exports = {
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports) {
+
+/* globals __VUE_SSR_CONTEXT__ */
+
+// this module is a runtime utility for cleaner component module output and will
+// be included in the final webpack user bundle
+
+module.exports = function normalizeComponent (
+  rawScriptExports,
+  compiledTemplate,
+  injectStyles,
+  scopeId,
+  moduleIdentifier /* server only */
+) {
+  var esModule
+  var scriptExports = rawScriptExports = rawScriptExports || {}
+
+  // ES6 modules interop
+  var type = typeof rawScriptExports.default
+  if (type === 'object' || type === 'function') {
+    esModule = rawScriptExports
+    scriptExports = rawScriptExports.default
+  }
+
+  // Vue.extend constructor export interop
+  var options = typeof scriptExports === 'function'
+    ? scriptExports.options
+    : scriptExports
+
+  // render functions
+  if (compiledTemplate) {
+    options.render = compiledTemplate.render
+    options.staticRenderFns = compiledTemplate.staticRenderFns
+  }
+
+  // scopedId
+  if (scopeId) {
+    options._scopeId = scopeId
+  }
+
+  var hook
+  if (moduleIdentifier) { // server build
+    hook = function (context) {
+      // 2.3 injection
+      context =
+        context || // cached call
+        (this.$vnode && this.$vnode.ssrContext) || // stateful
+        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
+      // 2.2 with runInNewContext: true
+      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+        context = __VUE_SSR_CONTEXT__
+      }
+      // inject component styles
+      if (injectStyles) {
+        injectStyles.call(this, context)
+      }
+      // register component module identifier for async chunk inferrence
+      if (context && context._registeredComponents) {
+        context._registeredComponents.add(moduleIdentifier)
+      }
+    }
+    // used by ssr in case component is cached and beforeCreate
+    // never gets called
+    options._ssrRegister = hook
+  } else if (injectStyles) {
+    hook = injectStyles
+  }
+
+  if (hook) {
+    var functional = options.functional
+    var existing = functional
+      ? options.render
+      : options.beforeCreate
+    if (!functional) {
+      // inject component registration as beforeCreate hook
+      options.beforeCreate = existing
+        ? [].concat(existing, hook)
+        : [hook]
+    } else {
+      // register for functioal component in vue file
+      options.render = function renderWithStyleInjection (h, context) {
+        hook.call(context)
+        return existing(h, context)
+      }
+    }
+  }
+
+  return {
+    esModule: esModule,
+    exports: scriptExports,
+    options: options
+  }
+}
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Base object for different progress bar shapes
@@ -841,7 +938,7 @@ module.exports = Shape;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -939,103 +1036,6 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 module.exports = defaults;
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(22)))
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-/* globals __VUE_SSR_CONTEXT__ */
-
-// this module is a runtime utility for cleaner component module output and will
-// be included in the final webpack user bundle
-
-module.exports = function normalizeComponent (
-  rawScriptExports,
-  compiledTemplate,
-  injectStyles,
-  scopeId,
-  moduleIdentifier /* server only */
-) {
-  var esModule
-  var scriptExports = rawScriptExports = rawScriptExports || {}
-
-  // ES6 modules interop
-  var type = typeof rawScriptExports.default
-  if (type === 'object' || type === 'function') {
-    esModule = rawScriptExports
-    scriptExports = rawScriptExports.default
-  }
-
-  // Vue.extend constructor export interop
-  var options = typeof scriptExports === 'function'
-    ? scriptExports.options
-    : scriptExports
-
-  // render functions
-  if (compiledTemplate) {
-    options.render = compiledTemplate.render
-    options.staticRenderFns = compiledTemplate.staticRenderFns
-  }
-
-  // scopedId
-  if (scopeId) {
-    options._scopeId = scopeId
-  }
-
-  var hook
-  if (moduleIdentifier) { // server build
-    hook = function (context) {
-      // 2.3 injection
-      context =
-        context || // cached call
-        (this.$vnode && this.$vnode.ssrContext) || // stateful
-        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
-      // 2.2 with runInNewContext: true
-      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-        context = __VUE_SSR_CONTEXT__
-      }
-      // inject component styles
-      if (injectStyles) {
-        injectStyles.call(this, context)
-      }
-      // register component module identifier for async chunk inferrence
-      if (context && context._registeredComponents) {
-        context._registeredComponents.add(moduleIdentifier)
-      }
-    }
-    // used by ssr in case component is cached and beforeCreate
-    // never gets called
-    options._ssrRegister = hook
-  } else if (injectStyles) {
-    hook = injectStyles
-  }
-
-  if (hook) {
-    var functional = options.functional
-    var existing = functional
-      ? options.render
-      : options.beforeCreate
-    if (!functional) {
-      // inject component registration as beforeCreate hook
-      options.beforeCreate = existing
-        ? [].concat(existing, hook)
-        : [hook]
-    } else {
-      // register for functioal component in vue file
-      options.render = function renderWithStyleInjection (h, context) {
-        hook.call(context)
-        return existing(h, context)
-      }
-    }
-  }
-
-  return {
-    esModule: esModule,
-    exports: scriptExports,
-    options: options
-  }
-}
-
 
 /***/ }),
 /* 5 */
@@ -4001,7 +4001,7 @@ module.exports = Path;
 
 // Circle shaped progress bar
 
-var Shape = __webpack_require__(2);
+var Shape = __webpack_require__(3);
 var utils = __webpack_require__(1);
 
 var Circle = function Circle(container, options) {
@@ -4046,7 +4046,7 @@ module.exports = Circle;
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(14);
-module.exports = __webpack_require__(52);
+module.exports = __webpack_require__(55);
 
 
 /***/ }),
@@ -14272,7 +14272,7 @@ module.exports = __webpack_require__(19);
 var utils = __webpack_require__(0);
 var bind = __webpack_require__(6);
 var Axios = __webpack_require__(21);
-var defaults = __webpack_require__(3);
+var defaults = __webpack_require__(4);
 
 /**
  * Create an instance of Axios
@@ -14355,7 +14355,7 @@ function isSlowBuffer (obj) {
 "use strict";
 
 
-var defaults = __webpack_require__(3);
+var defaults = __webpack_require__(4);
 var utils = __webpack_require__(0);
 var InterceptorManager = __webpack_require__(31);
 var dispatchRequest = __webpack_require__(32);
@@ -15077,7 +15077,7 @@ module.exports = InterceptorManager;
 var utils = __webpack_require__(0);
 var transformData = __webpack_require__(33);
 var isCancel = __webpack_require__(9);
-var defaults = __webpack_require__(3);
+var defaults = __webpack_require__(4);
 
 /**
  * Throws a `Cancel` if cancellation has been requested.
@@ -15333,13 +15333,13 @@ var routes = [{
     component: __webpack_require__(39)
 }, {
     path: '/skills',
-    component: __webpack_require__(60)
+    component: __webpack_require__(42)
 }, {
     path: '/posts',
     component: __webpack_require__(49)
 }, {
     path: '/projects',
-    component: __webpack_require__(57)
+    component: __webpack_require__(52)
 }];
 
 /* harmony default export */ __webpack_exports__["a"] = (new __WEBPACK_IMPORTED_MODULE_0_vue_router__["a" /* default */]({
@@ -15353,7 +15353,7 @@ var routes = [{
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var Component = __webpack_require__(4)(
+var Component = __webpack_require__(2)(
   /* script */
   __webpack_require__(40),
   /* template */
@@ -15365,7 +15365,7 @@ var Component = __webpack_require__(4)(
   /* moduleIdentifier (server only) */
   null
 )
-Component.options.__file = "/Users/oussama-keddar/projects/portfolio/resources/assets/js/views/Home.vue"
+Component.options.__file = "/Users/oussama-keddar/projects/personal/resources/assets/js/views/Home.vue"
 if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key.substr(0, 2) !== "__"})) {console.error("named exports are not supported in *.vue files.")}
 if (Component.options.functional) {console.error("[vue-loader] Home.vue: functional components are not supported with templates, they should use render functions.")}
 
@@ -15376,9 +15376,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-7029fb4e", Component.options)
+    hotAPI.createRecord("data-v-4bc961b5", Component.options)
   } else {
-    hotAPI.reload("data-v-7029fb4e", Component.options)
+    hotAPI.reload("data-v-4bc961b5", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -15458,13 +15458,268 @@ module.exports.render._withStripped = true
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-     require("vue-hot-reload-api").rerender("data-v-7029fb4e", module.exports)
+     require("vue-hot-reload-api").rerender("data-v-4bc961b5", module.exports)
   }
 }
 
 /***/ }),
-/* 42 */,
-/* 43 */,
+/* 42 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var Component = __webpack_require__(2)(
+  /* script */
+  __webpack_require__(43),
+  /* template */
+  __webpack_require__(48),
+  /* styles */
+  null,
+  /* scopeId */
+  null,
+  /* moduleIdentifier (server only) */
+  null
+)
+Component.options.__file = "/Users/oussama-keddar/projects/personal/resources/assets/js/views/Skill.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key.substr(0, 2) !== "__"})) {console.error("named exports are not supported in *.vue files.")}
+if (Component.options.functional) {console.error("[vue-loader] Skill.vue: functional components are not supported with templates, they should use render functions.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-2870e26b", Component.options)
+  } else {
+    hotAPI.reload("data-v-2870e26b", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 43 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+var ProgressBar = __webpack_require__(44);
+/* harmony default export */ __webpack_exports__["default"] = ({
+  mounted: function mounted() {
+    this.php();
+    this.js();
+    this.frameWork();
+    this.frontEnd();
+  },
+
+  methods: {
+    php: function (_php) {
+      function php() {
+        return _php.apply(this, arguments);
+      }
+
+      php.toString = function () {
+        return _php.toString();
+      };
+
+      return php;
+    }(function () {
+      var bar = new ProgressBar.Circle(php, {
+        color: '#aaa',
+        strokeWidth: 4,
+        trailWidth: 1,
+        easing: 'bounce',
+        duration: 1200,
+        text: {
+          autoStyleContainer: false
+        },
+        from: { color: '#aaa', width: 1 },
+        to: { color: '#333', width: 4 },
+        // Set default step function for all animate calls
+        step: function step(state, circle) {
+          circle.path.setAttribute('stroke', state.color);
+          circle.path.setAttribute('stroke-width', state.width);
+          var value = Math.round(circle.value() * 100);
+          if (value === 0) {
+            circle.setText('');
+          } else {
+            circle.setText(value);
+          }
+        }
+      });
+      bar.text.style.fontFamily = '"Lato", Helvetica, sans-serif';
+      bar.text.style.fontSize = '4rem';
+      bar.text.style.fontWeight = '200';
+
+      bar.animate(0.8); // Number from 0.0 to 1.0
+    }),
+    js: function (_js) {
+      function js() {
+        return _js.apply(this, arguments);
+      }
+
+      js.toString = function () {
+        return _js.toString();
+      };
+
+      return js;
+    }(function () {
+      var bar = new ProgressBar.Circle(js, {
+        color: '#aaa',
+        strokeWidth: 4,
+        trailWidth: 1,
+        easing: 'bounce',
+        duration: 1200,
+        text: {
+          autoStyleContainer: false
+        },
+        from: { color: '#aaa', width: 1 },
+        to: { color: '#333', width: 4 },
+        // Set default step function for all animate calls
+        step: function step(state, circle) {
+          circle.path.setAttribute('stroke', state.color);
+          circle.path.setAttribute('stroke-width', state.width);
+          var value = Math.round(circle.value() * 100);
+          if (value === 0) {
+            circle.setText('');
+          } else {
+            circle.setText(value);
+          }
+        }
+      });
+      bar.text.style.fontFamily = '"Lato", Helvetica, sans-serif';
+      bar.text.style.fontSize = '4rem';
+      bar.text.style.fontWeight = '200';
+
+      bar.animate(0.75); // Number from 0.0 to 1.0
+    }),
+    frameWork: function frameWork() {
+      var bar = new ProgressBar.Circle(framework, {
+        color: '#aaa',
+        strokeWidth: 4,
+        trailWidth: 1,
+        easing: 'bounce',
+        duration: 1200,
+        text: {
+          autoStyleContainer: false
+        },
+        from: { color: '#aaa', width: 1 },
+        to: { color: '#333', width: 4 },
+        // Set default step function for all animate calls
+        step: function step(state, circle) {
+          circle.path.setAttribute('stroke', state.color);
+          circle.path.setAttribute('stroke-width', state.width);
+          var value = Math.round(circle.value() * 100);
+          if (value === 0) {
+            circle.setText('');
+          } else {
+            circle.setText(value);
+          }
+        }
+      });
+      bar.text.style.fontFamily = '"Lato", Helvetica, sans-serif';
+      bar.text.style.fontSize = '4rem';
+      bar.text.style.fontWeight = '200';
+
+      bar.animate(0.60);
+    },
+    frontEnd: function frontEnd() {
+      var bar = new ProgressBar.Circle(frontend, {
+        color: '#aaa',
+        strokeWidth: 4,
+        trailWidth: 1,
+        easing: 'bounce',
+        duration: 1200,
+        text: {
+          autoStyleContainer: false
+        },
+        from: { color: '#aaa', width: 1 },
+        to: { color: '#333', width: 4 },
+        // Set default step function for all animate calls
+        step: function step(state, circle) {
+          circle.path.setAttribute('stroke', state.color);
+          circle.path.setAttribute('stroke-width', state.width);
+          var value = Math.round(circle.value() * 100);
+          if (value === 0) {
+            circle.setText('');
+          } else {
+            circle.setText(value);
+          }
+        }
+      });
+      bar.text.style.fontFamily = '"Lato", Helvetica, sans-serif';
+      bar.text.style.fontSize = '4rem';
+      bar.text.style.fontWeight = '200';
+
+      bar.animate(0.85);
+    }
+  }
+});
+
+/***/ }),
 /* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -15480,7 +15735,7 @@ module.exports = {
     // Base-class for creating new custom shapes
     // to be in line with the API of built-in shapes
     // Undocumented.
-    Shape: __webpack_require__(2),
+    Shape: __webpack_require__(3),
 
     // Internal utils, undocumented.
     utils: __webpack_require__(1)
@@ -15493,7 +15748,7 @@ module.exports = {
 
 // Line shaped progress bar
 
-var Shape = __webpack_require__(2);
+var Shape = __webpack_require__(3);
 var utils = __webpack_require__(1);
 
 var Line = function Line(container, options) {
@@ -17185,7 +17440,7 @@ var Tweenable = (function () {
 
 // Semi-SemiCircle shaped progress bar
 
-var Shape = __webpack_require__(2);
+var Shape = __webpack_require__(3);
 var Circle = __webpack_require__(12);
 var utils = __webpack_require__(1);
 
@@ -17234,12 +17489,86 @@ module.exports = SemiCircle;
 
 
 /***/ }),
-/* 48 */,
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _vm._m(0)
+},staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
+  return _c('div', {
+    staticClass: "container"
+  }, [_c('div', {
+    staticClass: "row"
+  }, [_c('div', {
+    staticClass: "box col-md-8 col-md-offset-2"
+  }, [_c('div', {
+    staticClass: "panel panel-default"
+  }, [_c('div', {
+    staticClass: "panel-heading "
+  }, [_c('b', [_vm._v("Skills")])]), _vm._v(" "), _c('div', {
+    staticClass: "panel-body"
+  }, [_c('div', {
+    staticClass: "skills"
+  }, [_c('div', {
+    staticClass: "skill"
+  }, [_c('div', {
+    staticClass: "skill-header"
+  }, [_c('h3', [_vm._v("\n                                        PHP\n                                    ")])]), _vm._v(" "), _c('div', {
+    staticClass: "skill-content"
+  }, [_c('div', {
+    staticClass: "progress",
+    attrs: {
+      "id": "php"
+    }
+  })])]), _vm._v(" "), _c('div', {
+    staticClass: "skill"
+  }, [_c('div', {
+    staticClass: "skill-header"
+  }, [_c('h3', [_vm._v("\n                                        JavaScript\n                                    ")])]), _vm._v(" "), _c('div', {
+    staticClass: "skill-content"
+  }, [_c('div', {
+    staticClass: "progress",
+    attrs: {
+      "id": "js"
+    }
+  })])]), _vm._v(" "), _c('div', {
+    staticClass: "skill"
+  }, [_c('div', {
+    staticClass: "skill-header"
+  }, [_c('h3', [_vm._v("\n                                        Frameworks\n                                    ")])]), _vm._v(" "), _c('div', {
+    staticClass: "skill-content"
+  }, [_c('div', {
+    staticClass: "progress",
+    attrs: {
+      "id": "framework"
+    }
+  })])]), _vm._v(" "), _c('div', {
+    staticClass: "skill"
+  }, [_c('div', {
+    staticClass: "skill-header"
+  }, [_c('h3', [_vm._v("\n                                        CSS/Front-End\n                                    ")])]), _vm._v(" "), _c('div', {
+    staticClass: "skill-content"
+  }, [_c('div', {
+    staticClass: "progress",
+    attrs: {
+      "id": "frontend"
+    }
+  })])])])])])])])])
+}]}
+module.exports.render._withStripped = true
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+     require("vue-hot-reload-api").rerender("data-v-2870e26b", module.exports)
+  }
+}
+
+/***/ }),
 /* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var Component = __webpack_require__(4)(
+var Component = __webpack_require__(2)(
   /* script */
   __webpack_require__(50),
   /* template */
@@ -17251,7 +17580,7 @@ var Component = __webpack_require__(4)(
   /* moduleIdentifier (server only) */
   null
 )
-Component.options.__file = "/Users/oussama-keddar/projects/portfolio/resources/assets/js/views/Posts.vue"
+Component.options.__file = "/Users/oussama-keddar/projects/personal/resources/assets/js/views/Posts.vue"
 if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key.substr(0, 2) !== "__"})) {console.error("named exports are not supported in *.vue files.")}
 if (Component.options.functional) {console.error("[vue-loader] Posts.vue: functional components are not supported with templates, they should use render functions.")}
 
@@ -17262,9 +17591,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-324276c9", Component.options)
+    hotAPI.createRecord("data-v-2a3002ed", Component.options)
   } else {
-    hotAPI.reload("data-v-324276c9", Component.options)
+    hotAPI.reload("data-v-2a3002ed", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -17361,30 +17690,20 @@ module.exports.render._withStripped = true
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-     require("vue-hot-reload-api").rerender("data-v-324276c9", module.exports)
+     require("vue-hot-reload-api").rerender("data-v-2a3002ed", module.exports)
   }
 }
 
 /***/ }),
 /* 52 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 53 */,
-/* 54 */,
-/* 55 */,
-/* 56 */,
-/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var Component = __webpack_require__(4)(
+var Component = __webpack_require__(2)(
   /* script */
-  __webpack_require__(58),
+  __webpack_require__(53),
   /* template */
-  __webpack_require__(59),
+  __webpack_require__(54),
   /* styles */
   null,
   /* scopeId */
@@ -17392,7 +17711,7 @@ var Component = __webpack_require__(4)(
   /* moduleIdentifier (server only) */
   null
 )
-Component.options.__file = "/Users/oussama-keddar/projects/portfolio/resources/assets/js/views/Project.vue"
+Component.options.__file = "/Users/oussama-keddar/projects/personal/resources/assets/js/views/Project.vue"
 if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key.substr(0, 2) !== "__"})) {console.error("named exports are not supported in *.vue files.")}
 if (Component.options.functional) {console.error("[vue-loader] Project.vue: functional components are not supported with templates, they should use render functions.")}
 
@@ -17403,9 +17722,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-c3c798e2", Component.options)
+    hotAPI.createRecord("data-v-50d746b3", Component.options)
   } else {
-    hotAPI.reload("data-v-c3c798e2", Component.options)
+    hotAPI.reload("data-v-50d746b3", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -17416,7 +17735,7 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 58 */
+/* 53 */
 /***/ (function(module, exports) {
 
 //
@@ -17456,7 +17775,7 @@ module.exports = Component.exports
 //
 
 /***/ }),
-/* 59 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -17504,341 +17823,15 @@ module.exports.render._withStripped = true
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-     require("vue-hot-reload-api").rerender("data-v-c3c798e2", module.exports)
+     require("vue-hot-reload-api").rerender("data-v-50d746b3", module.exports)
   }
 }
 
 /***/ }),
-/* 60 */
-/***/ (function(module, exports, __webpack_require__) {
+/* 55 */
+/***/ (function(module, exports) {
 
-var disposed = false
-var Component = __webpack_require__(4)(
-  /* script */
-  __webpack_require__(61),
-  /* template */
-  __webpack_require__(62),
-  /* styles */
-  null,
-  /* scopeId */
-  null,
-  /* moduleIdentifier (server only) */
-  null
-)
-Component.options.__file = "/Users/oussama-keddar/projects/portfolio/resources/assets/js/views/Skill.vue"
-if (Component.esModule && Object.keys(Component.esModule).some(function (key) {return key !== "default" && key.substr(0, 2) !== "__"})) {console.error("named exports are not supported in *.vue files.")}
-if (Component.options.functional) {console.error("[vue-loader] Skill.vue: functional components are not supported with templates, they should use render functions.")}
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-30835647", Component.options)
-  } else {
-    hotAPI.reload("data-v-30835647", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 61 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-var ProgressBar = __webpack_require__(44);
-/* harmony default export */ __webpack_exports__["default"] = ({
-  mounted: function mounted() {
-    this.php();
-    this.js();
-    this.frameWork();
-    this.frontEnd();
-  },
-
-  methods: {
-    php: function (_php) {
-      function php() {
-        return _php.apply(this, arguments);
-      }
-
-      php.toString = function () {
-        return _php.toString();
-      };
-
-      return php;
-    }(function () {
-      var bar = new ProgressBar.Circle(php, {
-        color: '#aaa',
-        strokeWidth: 4,
-        trailWidth: 1,
-        easing: 'bounce',
-        duration: 1200,
-        text: {
-          autoStyleContainer: false
-        },
-        from: { color: '#aaa', width: 1 },
-        to: { color: '#333', width: 4 },
-        // Set default step function for all animate calls
-        step: function step(state, circle) {
-          circle.path.setAttribute('stroke', state.color);
-          circle.path.setAttribute('stroke-width', state.width);
-          var value = Math.round(circle.value() * 100);
-          if (value === 0) {
-            circle.setText('');
-          } else {
-            circle.setText(value);
-          }
-        }
-      });
-      bar.text.style.fontFamily = '"Lato", Helvetica, sans-serif';
-      bar.text.style.fontSize = '4rem';
-      bar.text.style.fontWeight = '200';
-
-      bar.animate(0.8); // Number from 0.0 to 1.0
-    }),
-    js: function (_js) {
-      function js() {
-        return _js.apply(this, arguments);
-      }
-
-      js.toString = function () {
-        return _js.toString();
-      };
-
-      return js;
-    }(function () {
-      var bar = new ProgressBar.Circle(js, {
-        color: '#aaa',
-        strokeWidth: 4,
-        trailWidth: 1,
-        easing: 'bounce',
-        duration: 1200,
-        text: {
-          autoStyleContainer: false
-        },
-        from: { color: '#aaa', width: 1 },
-        to: { color: '#333', width: 4 },
-        // Set default step function for all animate calls
-        step: function step(state, circle) {
-          circle.path.setAttribute('stroke', state.color);
-          circle.path.setAttribute('stroke-width', state.width);
-          var value = Math.round(circle.value() * 100);
-          if (value === 0) {
-            circle.setText('');
-          } else {
-            circle.setText(value);
-          }
-        }
-      });
-      bar.text.style.fontFamily = '"Lato", Helvetica, sans-serif';
-      bar.text.style.fontSize = '4rem';
-      bar.text.style.fontWeight = '200';
-
-      bar.animate(0.75); // Number from 0.0 to 1.0
-    }),
-    frameWork: function frameWork() {
-      var bar = new ProgressBar.Circle(framework, {
-        color: '#aaa',
-        strokeWidth: 4,
-        trailWidth: 1,
-        easing: 'bounce',
-        duration: 1200,
-        text: {
-          autoStyleContainer: false
-        },
-        from: { color: '#aaa', width: 1 },
-        to: { color: '#333', width: 4 },
-        // Set default step function for all animate calls
-        step: function step(state, circle) {
-          circle.path.setAttribute('stroke', state.color);
-          circle.path.setAttribute('stroke-width', state.width);
-          var value = Math.round(circle.value() * 100);
-          if (value === 0) {
-            circle.setText('');
-          } else {
-            circle.setText(value);
-          }
-        }
-      });
-      bar.text.style.fontFamily = '"Lato", Helvetica, sans-serif';
-      bar.text.style.fontSize = '4rem';
-      bar.text.style.fontWeight = '200';
-
-      bar.animate(0.60);
-    },
-    frontEnd: function frontEnd() {
-      var bar = new ProgressBar.Circle(frontend, {
-        color: '#aaa',
-        strokeWidth: 4,
-        trailWidth: 1,
-        easing: 'bounce',
-        duration: 1200,
-        text: {
-          autoStyleContainer: false
-        },
-        from: { color: '#aaa', width: 1 },
-        to: { color: '#333', width: 4 },
-        // Set default step function for all animate calls
-        step: function step(state, circle) {
-          circle.path.setAttribute('stroke', state.color);
-          circle.path.setAttribute('stroke-width', state.width);
-          var value = Math.round(circle.value() * 100);
-          if (value === 0) {
-            circle.setText('');
-          } else {
-            circle.setText(value);
-          }
-        }
-      });
-      bar.text.style.fontFamily = '"Lato", Helvetica, sans-serif';
-      bar.text.style.fontSize = '4rem';
-      bar.text.style.fontWeight = '200';
-
-      bar.animate(0.85);
-    }
-  }
-});
-
-/***/ }),
-/* 62 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _vm._m(0)
-},staticRenderFns: [function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
-  return _c('div', {
-    staticClass: "container"
-  }, [_c('div', {
-    staticClass: "row"
-  }, [_c('div', {
-    staticClass: "box col-md-8 col-md-offset-2"
-  }, [_c('div', {
-    staticClass: "panel panel-default"
-  }, [_c('div', {
-    staticClass: "panel-heading "
-  }, [_c('b', [_vm._v("Skills")])]), _vm._v(" "), _c('div', {
-    staticClass: "panel-body"
-  }, [_c('div', {
-    staticClass: "skills"
-  }, [_c('div', {
-    staticClass: "skill"
-  }, [_c('div', {
-    staticClass: "skill-header"
-  }, [_c('h3', [_vm._v("\n                                        PHP\n                                    ")])]), _vm._v(" "), _c('div', {
-    staticClass: "skill-content"
-  }, [_c('div', {
-    staticClass: "progress",
-    attrs: {
-      "id": "php"
-    }
-  })])]), _vm._v(" "), _c('div', {
-    staticClass: "skill"
-  }, [_c('div', {
-    staticClass: "skill-header"
-  }, [_c('h3', [_vm._v("\n                                        JavaScript\n                                    ")])]), _vm._v(" "), _c('div', {
-    staticClass: "skill-content"
-  }, [_c('div', {
-    staticClass: "progress",
-    attrs: {
-      "id": "js"
-    }
-  })])]), _vm._v(" "), _c('div', {
-    staticClass: "skill"
-  }, [_c('div', {
-    staticClass: "skill-header"
-  }, [_c('h3', [_vm._v("\n                                        Frameworks\n                                    ")])]), _vm._v(" "), _c('div', {
-    staticClass: "skill-content"
-  }, [_c('div', {
-    staticClass: "progress",
-    attrs: {
-      "id": "framework"
-    }
-  })])]), _vm._v(" "), _c('div', {
-    staticClass: "skill"
-  }, [_c('div', {
-    staticClass: "skill-header"
-  }, [_c('h3', [_vm._v("\n                                        CSS/Front-End\n                                    ")])]), _vm._v(" "), _c('div', {
-    staticClass: "skill-content"
-  }, [_c('div', {
-    staticClass: "progress",
-    attrs: {
-      "id": "frontend"
-    }
-  })])])])])])])])])
-}]}
-module.exports.render._withStripped = true
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-     require("vue-hot-reload-api").rerender("data-v-30835647", module.exports)
-  }
-}
+// removed by extract-text-webpack-plugin
 
 /***/ })
 /******/ ]);
