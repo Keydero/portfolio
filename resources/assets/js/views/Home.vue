@@ -13,7 +13,7 @@
 </div>
 
 <p>
-    I’m extremely passionate about web development and design in all it’s forms and trying to improve my skills every day,  via websites like laracasts, to videos on youtube, books and all expoitable usefull resources that can lead me for progress. Aside from web development, I enjoy spending my time taking photos, playing games, watching films (i’m a huge fan about Christopher Nolan, QT, Kubrick).
+    I’m extremely passionate about web development and design in all it’s forms and trying to improve my skills every day,  via websites like laracasts, to videos on youtube, books and all workable and usefull resources that can lead me to progress. Aside from web development, I enjoy spending my time taking photos, playing games, watching films (i’m a huge fan about Christopher Nolan, QT, Kubrick).
 </p>
                     </div>
                 </div>

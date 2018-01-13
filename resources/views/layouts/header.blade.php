@@ -1,4 +1,5 @@
 <section class="hero is-custom is-large">
+  <div id="particles"></div>
   <!-- Hero header: will stick at the top -->
   <div class="hero-head">
     <header class="nav">
