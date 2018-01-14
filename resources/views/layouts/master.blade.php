@@ -10,7 +10,7 @@
         <title>Oussama Keddar</title>
     </head>
     <body>
-    <div id="app">
+    <div id="app" >
     @include('layouts.header')
         <router-view> </router-view>
     </div>

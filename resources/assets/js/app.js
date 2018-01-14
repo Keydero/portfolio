@@ -1,7 +1,7 @@
 require('./bootstrap');
 require('./particles');
 import router from './routes';
-
+import Animate from 'animate.css';
 
 new Vue({
     el: '#app',
@@ -10,6 +10,12 @@ new Vue({
 
     },
     methods: {
+
+    },
+    beforeCreate() {
+
+    },
+    created() {
 
     }
 });
