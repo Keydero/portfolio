@@ -1,8 +1,22 @@
 require('./bootstrap');
 require('./particles');
+require('./errors.js');
 import router from './routes';
 import Animate from 'animate.css';
-
+class Errors {
+	constructor() {
+		this.errors = {} // default empty
+	}
+	// Get the error.
+	get(field) {
+		if(this.errors[field]) {
+			return this.errors[field][0]
+		}
+	}
+	record(errors) {
+		this.errors = errors;
+	}
+}
 new Vue({
     el: '#app',
     router,
@@ -27,16 +41,22 @@ new Vue({
     	email: '',
     	subject: '',
     	message: '',
-    	errors: {}
+    	errors: new Errors,
+    	isFlying: false,
+    	isShaking: false
     },
     methods: {
     	sendMessage() {
     		axios.post('/contact', this.$data)
-    			.then(response => alert('Sent!'))
-    			.catch(error =>
-    			  this.errors = error.response.data.errors
+    			.then(response => this.isFlying = true)
+    			.catch(error => {
+    			  this.errors.record(error.response.data.errors)
+    			  this.isShaking = true
+    			}
     			 );  
-    			console.log(this.errors);	
+    		},
+    		update() {
+
     		}
     }
 });

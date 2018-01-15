@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.1/css/bulma.min.css">
+         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
         <link rel=stylesheet href="css/app.css">
         <title>Oussama Keddar</title>
     </head>
@@ -14,16 +15,25 @@
     @include('layouts.header')
         <router-view> </router-view>
     </div>
+    <style type="text/css">
+        .red {
+            background-color: red;
+            color:red;
+        }
+    </style>
 <footer id="form">
-<form class="cf" method="POST" @submit.prevent="sendMessage" >
+<form class="cf animated" method="POST" @submit.prevent="sendMessage" :class="{ 'bounceOutUp' : isFlying, 'shake' : isShaking}">
      {{ csrf_field() }}
   <div class="half left cf">
     <input v-model="name" type="text" id="input-name" placeholder="Name">
+    <span class="help is-danger" v-text="errors.get('name')"></span>
     <input v-model="email" type="email" id="input-email" placeholder="Email address">
+    <span class="help is-danger" v-text="errors.get('email')"></span>
     <input v-model="subject" type="text" id="input-subject" placeholder="Subject">
   </div>
   <div class="half right cf">
     <textarea v-model="message" type="text" id="input-message" placeholder="Message"></textarea>
+    <span class="help is-danger" v-text="errors.get('message')"></span>
   </div>  
   <input type="submit" value="Submit" id="input-submit">
 </form>
