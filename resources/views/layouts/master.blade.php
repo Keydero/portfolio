@@ -16,26 +16,28 @@
         <router-view> </router-view>
     </div>
     <style type="text/css">
-        .red {
-            background-color: red;
-            color:red;
+        span.help:empty {
+            display: none;
+            }
+        .disable {
+            background-color: black;
         }
     </style>
 <footer id="form">
-<form class="cf animated" method="POST" @submit.prevent="sendMessage" :class="{ 'bounceOutUp' : isFlying, 'shake' : isShaking}">
+<form  @keydown="errors.clear($event.target.name)" class="cf animated" method="POST" @submit.prevent="sendMessage" :class="{ 'bounceOutUp' : isFlying, 'shake' : isShaking}">
      {{ csrf_field() }}
   <div class="half left cf">
-    <input v-model="name" type="text" id="input-name" placeholder="Name">
+    <input v-model="name" type="text" id="input-name" placeholder="Name" name="name" @keydown="unshake">
     <span class="help is-danger" v-text="errors.get('name')"></span>
-    <input v-model="email" type="email" id="input-email" placeholder="Email address">
+    <input v-model="email" type="email" id="input-email" placeholder="Email address" name="email">
     <span class="help is-danger" v-text="errors.get('email')"></span>
     <input v-model="subject" type="text" id="input-subject" placeholder="Subject">
   </div>
   <div class="half right cf">
-    <textarea v-model="message" type="text" id="input-message" placeholder="Message"></textarea>
+    <textarea v-model="message" type="text" id="input-message" placeholder="Message" name="message"></textarea>
     <span class="help is-danger" v-text="errors.get('message')"></span>
   </div>  
-  <input type="submit" value="Submit" id="input-submit">
+  <input v-bind:style="baseSubmit" :disabled="errors.any()" type="submit" value="Submit" :class=" {'disable' : isDisabled} " >
 </form>
 </footer>
 

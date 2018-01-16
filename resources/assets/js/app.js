@@ -10,11 +10,17 @@ class Errors {
 	// Get the error.
 	get(field) {
 		if(this.errors[field]) {
-			return this.errors[field][0]
+			return this.errors[field][0];
 		}
 	}
 	record(errors) {
 		this.errors = errors;
+	}
+	clear(field) {
+		delete this.errors[field];
+	}
+	any() {
+		return Object.keys(this.errors).length > 0;
 	}
 }
 new Vue({
@@ -43,7 +49,12 @@ new Vue({
     	message: '',
     	errors: new Errors,
     	isFlying: false,
-    	isShaking: false
+    	isShaking: false,
+    	baseSubmit: {
+    		color: 'white',
+    		background: 'rgb(231, 76, 60)',
+    	},
+    	isDisabled: false
     },
     methods: {
     	sendMessage() {
@@ -51,12 +62,13 @@ new Vue({
     			.then(response => this.isFlying = true)
     			.catch(error => {
     			  this.errors.record(error.response.data.errors)
-    			  this.isShaking = true
+    			  this.isShaking = true;
+    			  this.isDisabled = true;
     			}
     			 );  
     		},
-    		update() {
-
+    		unshake() {
+    			this.isShaking = false;
     		}
     }
 });

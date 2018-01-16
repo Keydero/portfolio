@@ -234,3 +234,7 @@ form textarea {
   height: 100%;
 }
 
+.disable {
+  background-color: gray;
+}
+
