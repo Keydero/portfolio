@@ -17,6 +17,8 @@ Route::get('/articles', function() {
     return $tasks;
 });
 
+
+
 Route::post('contact', 'ContactController@store')->name('contact.store');
 // Route::get('/posts/{id}', function($id) {
 //     $tasks = DB::table('posts')->find($id);
